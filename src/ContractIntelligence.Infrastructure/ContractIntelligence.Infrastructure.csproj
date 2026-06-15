@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    INFRASTRUCTURE PROJECT
+    ======================
+    Concrete implementations of the Core abstractions. This is the ONLY project
+    that knows about Semantic Kernel, Azure, and third-party libraries.
+
+    Swap anything here without touching business logic in Core.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!--
+      Semantic Kernel marks some embedding APIs as "experimental", which the
+      compiler treats as errors. We knowingly opt in, so suppress those codes:
+        SKEXP0001 - embeddings abstractions
+        SKEXP0010 - Azure OpenAI connector experimental surface
+    -->
+    <NoWarn>$(NoWarn);SKEXP0001;SKEXP0010</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- LLM + embeddings via Semantic Kernel's Azure OpenAI connector -->
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureOpenAI" Version="1.77.0" />
+    <!-- Production vector store -->
+    <PackageReference Include="Azure.Search.Documents" Version="11.6.0" />
+    <!-- PDF text extraction (MIT licensed, pure .NET) -->
+    <PackageReference Include="PdfPig" Version="0.1.9" />
+    <!--
+      Microsoft.Extensions.DependencyInjection.Abstractions and
+      Microsoft.Extensions.Configuration.Abstractions (used by the
+      AddContractIntelligence() extension) arrive transitively via the Semantic
+      Kernel and Azure SDK packages at matching versions — referencing them
+      explicitly here only caused version-downgrade conflicts.
+    -->
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ContractIntelligence.Core\ContractIntelligence.Core.csproj" />
+  </ItemGroup>
+
+</Project>

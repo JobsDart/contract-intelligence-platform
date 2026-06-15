@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <!--
+    API PROJECT (host)
+    ==================
+    The ASP.NET Core entry point. Exposes the REST endpoints, serves the built-in
+    browser UI (wwwroot), and publishes an OpenAPI document at /openapi/v1.json.
+    All real work is delegated to the Application services in Core.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!-- Enables `dotnet user-secrets` so API keys never live in source control. -->
+    <UserSecretsId>contract-intelligence-api</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ContractIntelligence.Infrastructure\ContractIntelligence.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

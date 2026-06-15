@@ -1,0 +1,17 @@
+# .NET build output
+bin/
+obj/
+*.user
+
+# Rider / VS
+.idea/
+.vs/
+
+# Secrets — never commit
+appsettings.*.local.json
+*.env
+.env
+
+# OS
+.DS_Store
+Thumbs.db

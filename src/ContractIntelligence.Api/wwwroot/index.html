@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Contract Intelligence Platform — JobsDart</title>
+  <style>
+    :root { --bg:#0f172a; --panel:#1e293b; --accent:#38bdf8; --text:#e2e8f0; --muted:#94a3b8;
+            --low:#22c55e; --medium:#f59e0b; --high:#ef4444; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+           background: var(--bg); color: var(--text); }
+    header { padding: 24px 32px; border-bottom:1px solid #334155; }
+    header h1 { margin:0; font-size:20px; }
+    header p { margin:4px 0 0; color: var(--muted); font-size:13px; }
+    main { max-width: 980px; margin: 0 auto; padding: 24px 32px 64px; }
+    .grid { display:grid; grid-template-columns: 1fr 1fr; gap:20px; }
+    .card { background: var(--panel); border:1px solid #334155; border-radius:12px; padding:20px; }
+    .card h2 { margin:0 0 12px; font-size:15px; }
+    input[type=file], textarea, button { font: inherit; }
+    textarea { width:100%; min-height:80px; background:#0b1220; color:var(--text);
+               border:1px solid #334155; border-radius:8px; padding:10px; resize:vertical; }
+    button { background: var(--accent); color:#04293a; border:none; padding:10px 16px;
+             border-radius:8px; font-weight:600; cursor:pointer; margin-top:10px; }
+    button:disabled { opacity:.5; cursor:wait; }
+    .muted { color: var(--muted); font-size:13px; }
+    .answer { white-space:pre-wrap; line-height:1.5; }
+    .citation { border-left:3px solid var(--accent); padding:8px 12px; margin:8px 0;
+                background:#0b1220; border-radius:0 8px 8px 0; font-size:13px; }
+    table { width:100%; border-collapse:collapse; margin-top:8px; font-size:13px; }
+    th, td { text-align:left; padding:8px; border-bottom:1px solid #334155; vertical-align:top; }
+    .pill { padding:2px 8px; border-radius:999px; font-size:11px; font-weight:700; }
+    .Low { background:rgba(34,197,94,.15); color:var(--low); }
+    .Medium { background:rgba(245,158,11,.15); color:var(--medium); }
+    .High { background:rgba(239,68,68,.15); color:var(--high); }
+    .full { grid-column: 1 / -1; }
+    a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>📄 Contract Intelligence Platform</h1>
+    <p>Upload contracts → AI extracts clauses, flags GDPR/risk, and answers questions with citations.
+       Built on .NET 10 + Semantic Kernel + Azure OpenAI. &nbsp;|&nbsp; <a href="/openapi/v1.json">API spec</a></p>
+  </header>
+  <main>
+    <div class="grid">
+      <section class="card">
+        <h2>1 · Upload a contract</h2>
+        <input type="file" id="file" accept=".pdf,.txt,.md" />
+        <button id="uploadBtn">Upload &amp; Analyse</button>
+        <p class="muted" id="uploadStatus"></p>
+      </section>
+
+      <section class="card">
+        <h2>2 · Ask a question</h2>
+        <textarea id="question" placeholder="e.g. What are the termination clauses? Are there any GDPR risks?"></textarea>
+        <button id="askBtn">Ask</button>
+      </section>
+
+      <section class="card full" id="answerCard" style="display:none">
+        <h2>Answer</h2>
+        <div class="answer" id="answer"></div>
+        <div id="citations"></div>
+      </section>
+
+      <section class="card full" id="clausesCard" style="display:none">
+        <h2>Extracted clauses &amp; risk</h2>
+        <table id="clauses">
+          <thead><tr><th>Type</th><th>Summary</th><th>Page</th><th>Risk</th><th>Rationale</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const $ = id => document.getElementById(id);
+
+    $('uploadBtn').onclick = async () => {
+      const f = $('file').files[0];
+      if (!f) { $('uploadStatus').textContent = 'Choose a file first.'; return; }
+      const btn = $('uploadBtn'); btn.disabled = true;
+      $('uploadStatus').textContent = 'Uploading and analysing… (this calls Azure OpenAI)';
+      try {
+        const fd = new FormData(); fd.append('file', f);
+        const res = await fetch('/api/contracts', { method:'POST', body: fd });
+        if (!res.ok) throw new Error(await res.text());
+        const c = await res.json();
+        $('uploadStatus').textContent =
+          `✓ ${c.fileName} — ${c.status}, ${c.pageCount} page(s), ${c.clauses.length} clause(s).`;
+        renderClauses(c.clauses);
+      } catch (e) {
+        $('uploadStatus').textContent = '✗ ' + e.message;
+      } finally { btn.disabled = false; }
+    };
+
+    $('askBtn').onclick = async () => {
+      const q = $('question').value.trim();
+      if (!q) return;
+      const btn = $('askBtn'); btn.disabled = true;
+      $('answerCard').style.display = 'block';
+      $('answer').textContent = 'Thinking…'; $('citations').innerHTML = '';
+      try {
+        const res = await fetch('/api/query', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ question: q, topK: 5 })
+        });
+        if (!res.ok) throw new Error(await res.text());
+        const r = await res.json();
+        $('answer').textContent = r.answer;
+        $('citations').innerHTML = (r.citations || []).map(c =>
+          `<div class="citation"><b>${c.fileName}</b> · page ${c.pageNumber}<br>${escapeHtml(c.snippet)}</div>`
+        ).join('');
+      } catch (e) {
+        $('answer').textContent = '✗ ' + e.message;
+      } finally { btn.disabled = false; }
+    };
+
+    function renderClauses(clauses) {
+      if (!clauses || !clauses.length) { $('clausesCard').style.display = 'none'; return; }
+      $('clausesCard').style.display = 'block';
+      $('clauses').querySelector('tbody').innerHTML = clauses.map(c => `
+        <tr>
+          <td>${c.type}</td>
+          <td>${escapeHtml(c.summary)}</td>
+          <td>${c.pageNumber}</td>
+          <td><span class="pill ${c.risk}">${c.risk}</span></td>
+          <td>${escapeHtml(c.riskRationale)}</td>
+        </tr>`).join('');
+    }
+
+    function escapeHtml(s) {
+      return (s || '').replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+    }
+  </script>
+</body>
+</html>

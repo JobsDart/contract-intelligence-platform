@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ContractIntelligence.Api/ContractIntelligence.Api.csproj" />
+    <Project Path="src/ContractIntelligence.Core/ContractIntelligence.Core.csproj" />
+    <Project Path="src/ContractIntelligence.Infrastructure/ContractIntelligence.Infrastructure.csproj" />
+  </Folder>
+</Solution>

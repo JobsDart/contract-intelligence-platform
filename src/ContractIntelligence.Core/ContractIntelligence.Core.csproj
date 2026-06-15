@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    CORE PROJECT
+    ============
+    The heart of the application. Contains the domain model (Contract, Clause, …),
+    the use-case services (ingest, query, analyse) and the *abstractions*
+    (interfaces) that the outer layers implement.
+
+    IMPORTANT: This project has NO external dependencies and NO knowledge of
+    Azure, Semantic Kernel, PDF libraries or the web. That is deliberate —
+    it is the "Clean Architecture" inner ring. You can unit-test all business
+    logic here without spinning up any infrastructure.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>
