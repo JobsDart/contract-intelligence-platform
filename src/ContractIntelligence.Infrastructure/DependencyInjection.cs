@@ -25,7 +25,11 @@ public static class DependencyInjection
         this IServiceCollection services, IConfiguration config)
     {
         // ---- Azure OpenAI (chat + embeddings) ----
-        var endpoint = Required(config, "Ai:AzureOpenAI:Endpoint");
+        // Normalize to the base host (scheme://host/). The Azure OpenAI client appends
+        // its own "/openai/deployments/.../...?api-version=" path, so any extra path the
+        // user pasted (e.g. the Foundry "/openai/v1" surface) must be stripped — otherwise
+        // Azure returns "api-version query parameter is not allowed when using /v1 path".
+        var endpoint = NormalizeEndpoint(Required(config, "Ai:AzureOpenAI:Endpoint"));
         var apiKey = Required(config, "Ai:AzureOpenAI:ApiKey");
         var chatDeployment = config["Ai:AzureOpenAI:ChatDeployment"] ?? "gpt-4o";
         var embedDeployment = config["Ai:AzureOpenAI:EmbeddingDeployment"] ?? "text-embedding-3-large";
@@ -72,6 +76,13 @@ public static class DependencyInjection
         services.AddSingleton<QueryService>();
 
         return services;
+    }
+
+    /// <summary>Reduce any Azure OpenAI / Foundry endpoint to its base "scheme://host/" form.</summary>
+    private static string NormalizeEndpoint(string raw)
+    {
+        var uri = new Uri(raw.Trim(), UriKind.Absolute);
+        return $"{uri.Scheme}://{uri.Authority}/";
     }
 
     private static string Required(IConfiguration config, string key)
