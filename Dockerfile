@@ -3,7 +3,7 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
 # Copy csproj files first to leverage Docker layer caching on restore.
-COPY ContractIntelligence.sln .
+# (solution file not needed in the image — restore/publish target the .csproj directly)
 COPY src/ContractIntelligence.Core/ContractIntelligence.Core.csproj src/ContractIntelligence.Core/
 COPY src/ContractIntelligence.Infrastructure/ContractIntelligence.Infrastructure.csproj src/ContractIntelligence.Infrastructure/
 COPY src/ContractIntelligence.Api/ContractIntelligence.Api.csproj src/ContractIntelligence.Api/
