@@ -13,6 +13,8 @@
   <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-green">
 </p>
 
+> **▶ Live demo:** https://contract-intelligence.happywave-99507ff3.swedencentral.azurecontainerapps.io — upload a contract (or `samples/sample-services-agreement.txt`) and ask a question. First load may take ~20s while it scales from zero.
+
 ---
 
 ## What problem does it solve?
