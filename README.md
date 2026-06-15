@@ -11,6 +11,7 @@
   <img alt="Azure OpenAI" src="https://img.shields.io/badge/Azure%20OpenAI-GPT--4o-0089D6">
   <img alt="Azure AI Search" src="https://img.shields.io/badge/Azure%20AI%20Search-vector-0062AD">
   <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-green">
+  <a href="https://github.com/JobsDart/contract-intelligence-platform/actions"><img alt="Build" src="https://github.com/JobsDart/contract-intelligence-platform/actions/workflows/build-image.yaml/badge.svg"></a>
 </p>
 
 > **▶ Live demo:** https://contract-intelligence.happywave-99507ff3.swedencentral.azurecontainerapps.io — upload a contract (or `samples/sample-services-agreement.txt`) and ask a question. First load may take ~20s while it scales from zero.
